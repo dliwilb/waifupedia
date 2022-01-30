@@ -1,7 +1,16 @@
 function generateQueryURI(slp_add) {
-	let plainstr=`{"v":3,"q":{"db":["g"],"aggregate":[{"$match":{"graphTxn.outputs.address":"${slp_add}"}},{"$unwind":"$graphTxn.outputs"},{"$match":{"graphTxn.outputs.status":"UNSPENT","graphTxn.outputs.address":"${slp_add}"}},{"$group":{"_id":"$tokenDetails.tokenIdHex","slpAmount":{"$sum":"$graphTxn.outputs.slpAmount"}}},{"$sort":{"slpAmount":-1}},{"$match":{"slpAmount":{"$gt":0}}},{"$lookup":{"from":"tokens","localField":"_id","foreignField":"tokenDetails.tokenIdHex","as":"token"}}],"sort":{"slpAmount":-1},"skip":0,"limit":300}}`;
+	// const slpDataBaseServer = 'https://slpdb.electroncash.de/q/';
+	// const slpDataBaseServer = 'https://slpdb.fountainhead.cash/q/';
+	const slpDataBaseServer = 'https://slpdb.bitcoin.com/q/';
 
-	return 'https://slpdb.electroncash.de/q/' + btoa(plainstr);
+
+	let plainstr=`{"v":3,"q":{"db":["g"],"aggregate":[{"$match":{"graphTxn.outputs.address":"${slp_add}"}},{"$unwind":"$graphTxn.outputs"},{"$match":{"graphTxn.outputs.status":"UNSPENT","graphTxn.outputs.address":"${slp_add}"}},{"$group":{"_id":"$tokenDetails.tokenIdHex","slpAmount":{"$sum":"$graphTxn.outputs.slpAmount"}}},{"$sort":{"slpAmount":-1}},{"$match":{"slpAmount":{"$gt":0}}},{"$lookup":{"from":"tokens","localField":"_id","foreignField":"tokenDetails.tokenIdHex","as":"token"}}],"sort":{"slpAmount":-1},"skip":0,"limit":300}}`;
+	// console.log(plainstr);
+
+	const queryURI = slpDataBaseServer + btoa(plainstr);
+	// console.log(queryURI);
+	
+	return queryURI;
 }
 
 async function fetchJSON(api_uri) {
