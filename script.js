@@ -6,7 +6,7 @@ const params = new Proxy(new URLSearchParams(window.location.search), {
 if (params.a !== null){
 	// console.log('address detected');
 	document.getElementById('slpAddress').value = params.a;
-	window.history.pushState({}, document.title, "/" + "");
+	// window.history.pushState({}, document.title, "/" + "");
 }
 
 // const queryString = window.location.search;
