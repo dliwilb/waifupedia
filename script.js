@@ -1,3 +1,17 @@
+const params = new Proxy(new URLSearchParams(window.location.search), {
+	get: (searchParams, prop) => searchParams.get(prop),
+});
+// console.log(params.z);
+
+if (params.a !== null){
+	// console.log('address detected');
+	document.getElementById('slpAddress').value = params.a;
+	window.history.pushState({}, document.title, "/" + "");
+}
+
+// const queryString = window.location.search;
+// console.log(queryString);
+
 function generateQueryURI(slp_add, query_skip, query_limit) {
 	// const slpDataBaseServer = 'https://slpdb.electroncash.de/q/';
 	// const slpDataBaseServer = 'https://slpdb.fountainhead.cash/q/';
