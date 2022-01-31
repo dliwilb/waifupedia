@@ -4,7 +4,7 @@ function generateQueryURI(slp_add) {
 	const slpDataBaseServer = 'https://slpdb.bitcoin.com/q/';
 
 
-	let plainstr=`{"v":3,"q":{"db":["g"],"aggregate":[{"$match":{"graphTxn.outputs.address":"${slp_add}"}},{"$unwind":"$graphTxn.outputs"},{"$match":{"graphTxn.outputs.status":"UNSPENT","graphTxn.outputs.address":"${slp_add}"}},{"$group":{"_id":"$tokenDetails.tokenIdHex","slpAmount":{"$sum":"$graphTxn.outputs.slpAmount"}}},{"$sort":{"slpAmount":-1}},{"$match":{"slpAmount":{"$gt":0}}},{"$lookup":{"from":"tokens","localField":"_id","foreignField":"tokenDetails.tokenIdHex","as":"token"}}],"sort":{"slpAmount":-1},"skip":0,"limit":300}}`;
+	let plainstr=`{"v":3,"q":{"db":["g"],"aggregate":[{"$match":{"graphTxn.outputs.address":"${slp_add}"}},{"$unwind":"$graphTxn.outputs"},{"$match":{"graphTxn.outputs.status":"UNSPENT","graphTxn.outputs.address":"${slp_add}"}},{"$group":{"_id":"$tokenDetails.tokenIdHex","slpAmount":{"$sum":"$graphTxn.outputs.slpAmount"}}},{"$sort":{"slpAmount":-1}},{"$match":{"slpAmount":{"$gt":0}}},{"$lookup":{"from":"tokens","localField":"_id","foreignField":"tokenDetails.tokenIdHex","as":"token"}}],"sort":{"_id":1},"skip":0,"limit":300}}`;
 	// console.log(plainstr);
 
 	const queryURI = slpDataBaseServer + btoa(plainstr);
@@ -50,9 +50,9 @@ async function showWaifus() {
 
 		const queryURI = generateQueryURI(slp_add);
 		const waifus = await fetchJSON(queryURI);
-		console.log(waifus);
+		// console.log(waifus);
 		const kanji = await fetchJSON(kanji_uri);
-		console.log(kanji);
+		// console.log(kanji);
 
 		let waifuOwnedIndex = 0;
 		document.getElementById('waifusdiv').innerHTML = '';
