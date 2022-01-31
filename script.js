@@ -4,7 +4,40 @@ function generateQueryURI(slp_add) {
 	const slpDataBaseServer = 'https://slpdb.bitcoin.com/q/';
 
 
-	let plainstr=`{"v":3,"q":{"db":["g"],"aggregate":[{"$match":{"graphTxn.outputs.address":"${slp_add}"}},{"$unwind":"$graphTxn.outputs"},{"$match":{"graphTxn.outputs.status":"UNSPENT","graphTxn.outputs.address":"${slp_add}"}},{"$group":{"_id":"$tokenDetails.tokenIdHex","slpAmount":{"$sum":"$graphTxn.outputs.slpAmount"}}},{"$sort":{"slpAmount":-1}},{"$match":{"slpAmount":{"$gt":0}}},{"$lookup":{"from":"tokens","localField":"_id","foreignField":"tokenDetails.tokenIdHex","as":"token"}}],"sort":{"_id":1},"skip":0,"limit":300}}`;
+	let plainstr = 
+`
+{
+	"v": 3,
+	"q": {
+		"db": ["g"],
+		"aggregate": [
+			{ "$match": { 
+				"tokenDetails.nftGroupIdHex" : "a2987562a405648a6c5622ed6c205fca6169faa8afeb96a994b48010bd186a66",
+				"graphTxn.outputs.address": "${slp_add}",
+				"graphTxn.outputs.status": "UNSPENT"
+				}
+			},
+			{ "$group": {
+				"_id": "$tokenDetails.tokenIdHex",
+				"slpAmount": { "$sum": "$graphTxn.outputs.slpAmount" }
+				}
+			},
+			{ "$lookup": {
+				"from": "tokens",
+				"localField": "_id",
+				"foreignField": "tokenDetails.tokenIdHex",
+				"as": "token"
+				}
+			}
+		],
+		"sort": { "_id": 1 },
+		"skip": 100,
+		"limit": 100
+	}
+}
+`;
+
+	// let plainstr = `{"v":3,"q":{"db":["g"],"aggregate":[{"$match":{"graphTxn.outputs.address":"${slp_add}"}},{"$unwind":"$graphTxn.outputs"},{"$match":{"graphTxn.outputs.status":"UNSPENT","graphTxn.outputs.address":"${slp_add}"}},{"$group":{"_id":"$tokenDetails.tokenIdHex","slpAmount":{"$sum":"$graphTxn.outputs.slpAmount"}}},{"$sort":{"slpAmount":-1}},{"$match":{"slpAmount":{"$gt":0}}},{"$lookup":{"from":"tokens","localField":"_id","foreignField":"tokenDetails.tokenIdHex","as":"token"}}],"sort":{"_id":1},"skip":0,"limit":300}}`;
 	// console.log(plainstr);
 
 	const queryURI = slpDataBaseServer + btoa(plainstr);
