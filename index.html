@@ -96,7 +96,14 @@ input {
 <body style="color:#ffffff; background-color:#111111">
 
 <h2>WaifupediaJS</h2>
-<h4><input type="text" id="slpAddress" size="60" placeholder="simpleledger:" />
+<h4><input type="text" id="slpAddress" size="52" placeholder="simpleledger:" />
+	<select name="sort-method" id="sort-method">
+		<option value="none-selected" selected disabled>Sort by:</option>
+		<option value="sort-by-name-ascend" selected="true">Name (A-Z)</option>
+		<option value="sort-by-name-descend">Name (Z-A)</option>
+		<option value="sort-by-token-id-ascend">Token ID (A-Z)</option>
+		<option value="sort-by-token-id-descend">Token ID (Z-A)</option>
+	</select>
 <button class="onShow" onclick="showWaifus(0)">Submit</button></h4>
 
 <div id="number-of-waifus" style="text-align: center"></div>

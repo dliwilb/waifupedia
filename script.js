@@ -12,11 +12,32 @@ if (params.a !== null){
 // const queryString = window.location.search;
 // console.log(queryString);
 
-function generateQueryURI(slp_add, query_skip, query_limit) {
+function generateQueryURI(slp_add, querySkip, queryLimit) {
 	// const slpDataBaseServer = 'https://slpdb.electroncash.de/q/';
 	// const slpDataBaseServer = 'https://slpdb.fountainhead.cash/q/';
 	const slpDataBaseServer = 'https://slpdb.bitcoin.com/q/';
 
+	const sortMethod = document.getElementById('sort-method').value;
+	// console.log(sortMethod);
+
+	let sortMethodKey = '';
+	let sortMethodAtoZ = 0;
+	if (sortMethod === 'sort-by-token-id-ascend'){
+		sortMethodKey = '_id';
+		sortMethodAtoZ = 1;
+	}
+	else if (sortMethod === 'sort-by-token-id-descend'){
+		sortMethodKey = '_id';
+		sortMethodAtoZ = -1;
+	}
+	else if (sortMethod === 'sort-by-name-ascend'){
+		sortMethodKey = 'token.tokenDetails.name';
+		sortMethodAtoZ = 1;
+	}
+	else if (sortMethod === 'sort-by-name-descend'){
+		sortMethodKey = 'token.tokenDetails.name';
+		sortMethodAtoZ = -1;
+	}
 
 	let plainstr = 
 `
@@ -44,12 +65,14 @@ function generateQueryURI(slp_add, query_skip, query_limit) {
 				}
 			}
 		],
-		"sort": { "_id": 1 },
-		"skip": ${query_skip},
-		"limit": ${query_limit}
+		"sort": { "${sortMethodKey}": ${sortMethodAtoZ} },
+		"skip": ${querySkip},
+		"limit": ${queryLimit}
 	}
 }
 `;
+
+	// console.log(plainstr);
 
 	// let plainstr = `{"v":3,"q":{"db":["g"],"aggregate":[{"$match":{"graphTxn.outputs.address":"${slp_add}"}},{"$unwind":"$graphTxn.outputs"},{"$match":{"graphTxn.outputs.status":"UNSPENT","graphTxn.outputs.address":"${slp_add}"}},{"$group":{"_id":"$tokenDetails.tokenIdHex","slpAmount":{"$sum":"$graphTxn.outputs.slpAmount"}}},{"$sort":{"slpAmount":-1}},{"$match":{"slpAmount":{"$gt":0}}},{"$lookup":{"from":"tokens","localField":"_id","foreignField":"tokenDetails.tokenIdHex","as":"token"}}],"sort":{"_id":1},"skip":0,"limit":300}}`;
 	// console.log(plainstr);
@@ -73,19 +96,31 @@ async function fetchJSON(api_uri) {
 }
 
 
+const queryLimit = 100;
 let isRunning = false;
 let showingPage = 1;
 let waifuOwnedIndex = 0;
 
-async function showWaifus(query_skip) {
-	waifuOwnedIndex = query_skip;
-	// console.log(waifuOwnedIndex == 0);
-	if (waifuOwnedIndex === 0){
-		showingPage = 1;
-	}
+async function showWaifus(querySkip) {
 
     if (isRunning == false) {
         isRunning = true;
+
+		// waifuOwnedIndex = querySkip;
+		// console.log(waifuOwnedIndex == 0);
+		if (querySkip === 0) {
+			showingPage = 1;
+			waifuOwnedIndex = querySkip;
+		} else if (querySkip !== 0) {
+			if (querySkip === waifuOwnedIndex) {
+				showingPage++;
+			} else if (querySkip < waifuOwnedIndex) {
+				showingPage--;
+				querySkip = queryLimit * (showingPage-1);
+				waifuOwnedIndex = querySkip;
+			}
+		}
+		// console.log(querySkip + ", " + showingPage + ": " + waifuOwnedIndex);
 
 		document.getElementById('number-of-waifus').innerHTML = '';
 		document.getElementById('waifusdiv').innerHTML = "Loading...";
@@ -98,8 +133,7 @@ async function showWaifus(query_skip) {
 
 		const slp_add = document.getElementById('slpAddress').value;
 
-		const query_limit = 100;
-		const queryURI = generateQueryURI(slp_add, query_skip, query_limit);
+		const queryURI = generateQueryURI(slp_add, querySkip, queryLimit);
 		const waifus = await fetchJSON(queryURI);
 		// console.log(waifus);
 		const kanji = await fetchJSON(kanji_uri);
@@ -122,16 +156,16 @@ async function showWaifus(query_skip) {
 			}
 		}
 
-		if (waifuOwnedIndex < query_limit){
+		if (waifuOwnedIndex < queryLimit){
 			document.getElementById('number-of-waifus').innerHTML = `<h3>... ${waifuOwnedIndex} Waifus in total.</h3>`;
-		} else if (waifuOwnedIndex >= query_limit && waifuOwnedIndex < query_limit * 2) {
-			document.getElementById('number-of-waifus').innerHTML = `<h3>... showing the first ${waifuOwnedIndex} Waifus ... <button class="onShow" onclick="showWaifus(${query_limit*showingPage})">Show More</button></h3>`;
-			showingPage++;
-		} else if (waifuOwnedIndex >= query_limit * showingPage) {
-			document.getElementById('number-of-waifus').innerHTML = `<h3>... showing Waifus&nbsp;&nbsp;#${waifuOwnedIndex-query_limit+1}&nbsp;&nbsp;~&nbsp;&nbsp;#${waifuOwnedIndex} ... <button class="onShow" onclick="showWaifus(${query_limit*showingPage})">Show More</button></h3>`;
-			showingPage++;
+		} else if (waifuOwnedIndex >= queryLimit && waifuOwnedIndex < queryLimit * 2) {
+			document.getElementById('number-of-waifus').innerHTML = `<h3>... showing the first ${waifuOwnedIndex} Waifus ... <button class="onShow" onclick="showWaifus(${queryLimit*showingPage})">Show More</button></h3>`;
+			// showingPage++;
+		} else if (waifuOwnedIndex >= queryLimit * showingPage) {
+			document.getElementById('number-of-waifus').innerHTML = `<h3><button class="onShow" onclick="showWaifus(${queryLimit*(showingPage-1)})">Show Previous</button> ... showing Waifus&nbsp;&nbsp;#${waifuOwnedIndex-queryLimit+1}&nbsp;&nbsp;~&nbsp;&nbsp;#${waifuOwnedIndex} ... <button class="onShow" onclick="showWaifus(${queryLimit*showingPage})">Show More</button></h3>`;
+			// showingPage++;
 		} else {
-			document.getElementById('number-of-waifus').innerHTML = `<h3>... ${waifuOwnedIndex} Waifus in total.</h3>`;
+			document.getElementById('number-of-waifus').innerHTML = `<h3><button class="onShow" onclick="showWaifus(${queryLimit*(showingPage-1)})">Show Previous</button> ... ${waifuOwnedIndex} Waifus in total.</h3>`;
 		}
 
 		isRunning = false;
