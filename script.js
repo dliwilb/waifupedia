@@ -1,4 +1,4 @@
-function generateQueryURI(slp_add) {
+function generateQueryURI(slp_add, query_skip, query_limit) {
 	// const slpDataBaseServer = 'https://slpdb.electroncash.de/q/';
 	// const slpDataBaseServer = 'https://slpdb.fountainhead.cash/q/';
 	const slpDataBaseServer = 'https://slpdb.bitcoin.com/q/';
@@ -31,8 +31,8 @@ function generateQueryURI(slp_add) {
 			}
 		],
 		"sort": { "_id": 1 },
-		"skip": 100,
-		"limit": 100
+		"skip": ${query_skip},
+		"limit": ${query_limit}
 	}
 }
 `;
@@ -60,8 +60,15 @@ async function fetchJSON(api_uri) {
 
 
 let isRunning = false;
+let showingPage = 1;
+let waifuOwnedIndex = 0;
 
-async function showWaifus() {
+async function showWaifus(query_skip) {
+	waifuOwnedIndex = query_skip;
+	// console.log(waifuOwnedIndex == 0);
+	if (waifuOwnedIndex === 0){
+		showingPage = 1;
+	}
 
     if (isRunning == false) {
         isRunning = true;
@@ -73,31 +80,45 @@ async function showWaifus() {
 		const simpleledger = 'http://simpleledger.info/#token/';
 		const wgrp_id = 'a2987562a405648a6c5622ed6c205fca6169faa8afeb96a994b48010bd186a66';
 		const kanji_uri = './waifu_kanji.json';
-		const table_width = '1120';
-		const n_col = 4;
-		const td_width = '280';
-		const td_border = '3px';
-		const img_width = '75%';
+		const img_width = '240px';
 
 		const slp_add = document.getElementById('slpAddress').value;
 
-		const queryURI = generateQueryURI(slp_add);
+		const query_limit = 100;
+		const queryURI = generateQueryURI(slp_add, query_skip, query_limit);
 		const waifus = await fetchJSON(queryURI);
 		// console.log(waifus);
 		const kanji = await fetchJSON(kanji_uri);
 		// console.log(kanji);
 
-		let waifuOwnedIndex = 0;
 		document.getElementById('waifusdiv').innerHTML = '';
 		for (let i = 0; i < waifus.g.length; i++) {
 			if (waifus.g[i].token[0].nftParentId === wgrp_id) {
 				waifuOwnedIndex++;
 				let tokenId = waifus.g[i]._id;
-				document.getElementById('waifusdiv').innerHTML += `<span class="nftdisplay"><h3>[${waifuOwnedIndex}] ${waifus.g[i].token[0].tokenDetails.name}</h3><a href="${simpleledger}${waifus.g[i]._id}" title="Check on SLP Explorer" target="_blank"><img src="${waifufaucet}${waifus.g[i]._id}.png" width="${img_width}"/></a>
-				<h2>${kanji[tokenId]["kjlastname"]} ${kanji[tokenId]["kjfirstname"]}</h2></span>`;
+
+				if (typeof kanji[tokenId] !== 'undefined') {
+					document.getElementById('waifusdiv').innerHTML += `<span class="nftdisplay"><h3>#${waifuOwnedIndex} ${waifus.g[i].token[0].tokenDetails.name}</h3><a href="${simpleledger}${waifus.g[i]._id}" title="Check on SLP Explorer" target="_blank"><img src="${waifufaucet}${waifus.g[i]._id}.png" width="${img_width}"/></a>
+					<h2>${kanji[tokenId]["kjlastname"]} ${kanji[tokenId]["kjfirstname"]}</h2></span>`;
+				} else {
+					document.getElementById('waifusdiv').innerHTML += `<span class="nftdisplay"><h3>#${waifuOwnedIndex} ${waifus.g[i].token[0].tokenDetails.name}</h3><a href="${simpleledger}${waifus.g[i]._id}" title="Check on SLP Explorer" target="_blank"><img src="${waifufaucet}${waifus.g[i]._id}.png" width="${img_width}"/></a>
+					<h2>&nbsp;</h2></span>`;
+				}
+
 			}
 		}
-		document.getElementById('number-of-waifus').innerHTML = `<h3>... ${waifuOwnedIndex} Waifus in total.</h3>`;
+
+		if (waifuOwnedIndex < query_limit){
+			document.getElementById('number-of-waifus').innerHTML = `<h3>... ${waifuOwnedIndex} Waifus in total.</h3>`;
+		} else if (waifuOwnedIndex >= query_limit && waifuOwnedIndex < query_limit * 2) {
+			document.getElementById('number-of-waifus').innerHTML = `<h3>... showing the first ${waifuOwnedIndex} Waifus ... <button class="onShow" onclick="showWaifus(${query_limit*showingPage})">Show More</button></h3>`;
+			showingPage++;
+		} else if (waifuOwnedIndex >= query_limit * showingPage) {
+			document.getElementById('number-of-waifus').innerHTML = `<h3>... showing Waifus&nbsp;&nbsp;#${waifuOwnedIndex-query_limit+1}&nbsp;&nbsp;~&nbsp;&nbsp;#${waifuOwnedIndex} ... <button class="onShow" onclick="showWaifus(${query_limit*showingPage})">Show More</button></h3>`;
+			showingPage++;
+		} else {
+			document.getElementById('number-of-waifus').innerHTML = `<h3>... ${waifuOwnedIndex} Waifus in total.</h3>`;
+		}
 
 		isRunning = false;
 	}
