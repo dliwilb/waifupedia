@@ -162,7 +162,7 @@ async function showWaifus(querySkip) {
 			document.getElementById('number-of-waifus').innerHTML = `<h3>... showing the first ${waifuOwnedIndex} Waifus ... <button class="onShow" onclick="showWaifus(${queryLimit*showingPage})">Show More</button></h3>`;
 			// showingPage++;
 		} else if (waifuOwnedIndex >= queryLimit * showingPage) {
-			document.getElementById('number-of-waifus').innerHTML = `<h3><button class="onShow" onclick="showWaifus(${queryLimit*(showingPage-1)})">Show Previous</button> ... showing Waifus&nbsp;&nbsp;#${waifuOwnedIndex-queryLimit+1}&nbsp;&nbsp;~&nbsp;&nbsp;#${waifuOwnedIndex} ... <button class="onShow" onclick="showWaifus(${queryLimit*showingPage})">Show More</button></h3>`;
+			document.getElementById('number-of-waifus').innerHTML = `<h3><button class="onShow" onclick="showWaifus(${queryLimit*(showingPage-1)})">Show Previous</button> ... showing&nbsp;&nbsp;Waifus&nbsp;&nbsp;#${waifuOwnedIndex-queryLimit+1}&nbsp;&nbsp;~&nbsp;&nbsp;#${waifuOwnedIndex} ... <button class="onShow" onclick="showWaifus(${queryLimit*showingPage})">Show More</button></h3>`;
 			// showingPage++;
 		} else {
 			document.getElementById('number-of-waifus').innerHTML = `<h3><button class="onShow" onclick="showWaifus(${queryLimit*(showingPage-1)})">Show Previous</button> ... ${waifuOwnedIndex} Waifus in total.</h3>`;
